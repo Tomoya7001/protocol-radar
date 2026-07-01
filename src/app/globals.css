@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — single source of truth is docs/spec/02_DESIGN.md.
+ * All components reference token names only (no raw color/spacing/radius/font-size).
+ * Theme is switched via [data-theme] only; OS preference seeds the initial value once.
+ */
+
+:root {
+  /* Type scale (rem) */
+  --font-size-1: 0.75rem;
+  --font-size-2: 0.8125rem;
+  --font-size-3: 0.875rem;
+  --font-size-4: 1rem;
+  --font-size-5: 1.125rem;
+  --font-size-6: 1.375rem;
+  --font-size-7: 1.75rem;
+
+  /* Spacing scale (px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Control sizing */
+  --control-h: 36px;
+  --hit-min: 32px;
+
+  /* Fonts */
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  /* z-index tokens */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-toast: 300;
+}
+
+[data-theme="light"] {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #d8dce2;
+  --text: #1a1d23;
+  --text-muted: #5b6270;
+  --primary: #2563eb;
+  --primary-fg: #ffffff;
+  --info-tint: #eaf1ff;
+  --ok: #0f9d58;
+  --warn: #b8860b;
+  --danger: #d23f3f;
+  --focus-ring: #2563eb;
+
+  --shadow-1: 0 1px 2px rgba(16, 20, 28, 0.08);
+  --shadow-2: 0 8px 24px rgba(16, 20, 28, 0.16);
+}
+
+[data-theme="dark"] {
+  --bg: #0f1115;
+  --surface: #171a21;
+  --surface-2: #1e222b;
+  --border: #2a2f3a;
+  --text: #e6e9ef;
+  --text-muted: #9aa3b2;
+  --primary: #3b82f6;
+  --primary-fg: #ffffff;
+  --info-tint: #16243f;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --focus-ring: #93c5fd;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-3);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
