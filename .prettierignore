@@ -3,5 +3,11 @@ node_modules
 out
 build
 data
+.npm-cache
 pnpm-lock.yaml
 package-lock.json
+
+# Authoritative spec/docs and project meta are owned upstream; do not reformat them.
+docs
+NEXT_STEPS.md
+.claude

@@ -9,6 +9,7 @@
  */
 
 process.env.PROTOCOL_RADAR_HMAC_SECRET =
-  process.env.PROTOCOL_RADAR_HMAC_SECRET ?? "test-hmac-secret-do-not-use-in-prod";
+  process.env.PROTOCOL_RADAR_HMAC_SECRET ??
+  "test-hmac-secret-do-not-use-in-prod";
 
 process.env.DATABASE_PATH = process.env.DATABASE_PATH ?? ":memory:";
