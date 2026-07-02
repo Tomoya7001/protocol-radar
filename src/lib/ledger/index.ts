@@ -1,6 +1,7 @@
 export {
   append,
   verify,
+  verifyFromRaw,
   computeHash,
   GENESIS_PREV_HASH,
   LedgerSecretError,
