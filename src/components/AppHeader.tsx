@@ -43,10 +43,13 @@ export function AppHeader({
 
   return (
     <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-3">
+        {/* Brand doubles as the always-available home link back to the dashboard. */}
         <a
           href={dashHref}
-          className="inline-flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          aria-label={dict.detail.backToDashboard}
+          title={dict.detail.backToDashboard}
+          className="inline-flex h-control-h items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           <IconRadar className="h-5 w-5 text-primary" aria-hidden="true" />
           <span className="text-lg font-semibold text-text">
@@ -54,24 +57,28 @@ export function AppHeader({
           </span>
         </a>
 
-        <nav aria-label={dict.appName} className="flex items-center gap-2">
-          {navLink(dashHref, dict.nav.dashboard, active === "dashboard")}
-          {/* The single filled primary CTA for every view. */}
-          <a
-            href={verifyHref}
-            aria-current={active === "verify" ? "page" : undefined}
-            className="inline-flex h-control-h items-center gap-1 rounded-sm bg-primary px-3 text-sm font-medium text-primary-fg hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-          >
-            <IconShieldOk className="h-4 w-4" aria-hidden="true" />
-            {dict.nav.verify}
-          </a>
+        {/* Right cluster: primary nav group is kept tight, then a wider gap sets the
+            locale toggle apart so the two groups read as distinct and never crowd. */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <nav aria-label={dict.appName} className="flex items-center gap-2">
+            {navLink(dashHref, dict.nav.dashboard, active === "dashboard")}
+            {/* The single filled primary CTA for every view. */}
+            <a
+              href={verifyHref}
+              aria-current={active === "verify" ? "page" : undefined}
+              className="inline-flex h-control-h items-center gap-1 rounded-sm bg-primary px-3 text-sm font-medium text-primary-fg hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
+              <IconShieldOk className="h-4 w-4" aria-hidden="true" />
+              {dict.nav.verify}
+            </a>
+          </nav>
           <LocaleToggle
             locale={locale}
             jaHref={withLang(basePath, "ja")}
             enHref={withLang(basePath, "en")}
             dict={dict}
           />
-        </nav>
+        </div>
       </div>
     </header>
   );

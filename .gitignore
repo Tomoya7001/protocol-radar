@@ -4,15 +4,31 @@
 
 # next.js
 /.next
+/.next.nosync
 /out
 
 # production
 /build
 
+# build lock (serialized build wrapper)
+/.next-build.lock
+/.next-build.log
+
 # sqlite data
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
+# ...but the read-only snapshot IS committed so it can be bundled for deploy.
+!/data/snapshot.db
+
+# runtime/debug artifacts under data/ (never commit these)
+/data/*.log
+/data/*.err
+/data/*.out
+/data/*.pid
+/data/*.meta
+/data/*.html
+/data/ui-verify-*.png
 
 # env
 .env
@@ -23,3 +39,10 @@
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+.vercel
+
+# captured macOS temp build dir (/var/folders/.../T/tmp.*/nb)
+/var
+
+# Cockpit workspace metadata (never commit)
+/.fable/

@@ -65,6 +65,35 @@ function header(res: HttpResponse, name: string): string | null {
 }
 
 /**
+ * Build request headers for a source fetch. GitHub's REST API MANDATES a User-Agent (it
+ * returns 403 without one) and OPTIONALLY accepts a bearer token to raise the rate limit —
+ * neither is hardcoded: the UA has a safe default and the token is read from the environment
+ * (GITHUB_TOKEN / GITHUB_API_TOKEN) so the fetch works unauthenticated when no token is set.
+ */
+function buildHeaders(input: FetchInput): Record<string, string> {
+  const headers: Record<string, string> = {
+    accept: input.kind === "github" ? "application/vnd.github+json" : "*/*",
+  };
+  if (input.etag) headers["if-none-match"] = input.etag;
+  if (input.lastModified) headers["if-modified-since"] = input.lastModified;
+
+  if (input.kind === "github") {
+    // Required by the GitHub API. Overridable via env for a custom identity.
+    headers["user-agent"] =
+      process.env.GITHUB_API_USER_AGENT?.trim() || "protocol-radar";
+    headers["x-github-api-version"] = "2022-11-28";
+    const token = (
+      process.env.GITHUB_TOKEN ??
+      process.env.GITHUB_API_TOKEN ??
+      ""
+    ).trim();
+    if (token.length > 0) headers["authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+/**
  * Fetch a source with conditional GET, bounded retry/backoff, and timeout handling.
  * Retries only on network error / 5xx (up to maxAttempts). Delays are injectable (0 in
  * tests). Never throws — always resolves to a FetchOutcome so a single bad source cannot
@@ -79,11 +108,7 @@ export async function fetchSource(
   const baseDelayMs = options.baseDelayMs ?? 200;
   const sleep = options.sleep ?? realSleep;
 
-  const headers: Record<string, string> = {
-    accept: input.kind === "github" ? "application/vnd.github+json" : "*/*",
-  };
-  if (input.etag) headers["if-none-match"] = input.etag;
-  if (input.lastModified) headers["if-modified-since"] = input.lastModified;
+  const headers = buildHeaders(input);
 
   let lastError = "unknown error";
   let lastStatus: number | null = null;

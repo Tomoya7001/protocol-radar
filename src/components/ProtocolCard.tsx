@@ -7,6 +7,11 @@ import { FreshnessBadge, StatusBadge } from "./badges";
  * F-030 dashboard card: one protocol showing its state, last-change and freshness badge.
  * The whole card is a single keyboard-reachable link (one tab stop) with a :focus-visible
  * ring; it is NOT a filled primary CTA (§A.4 — the one primary lives in the header).
+ *
+ * `h-full w-full` makes the card fill its (stretched) grid cell so cards in a row are
+ * equal-height; `min-w-0` allows the header text to truncate in narrow columns. The footer
+ * uses `mt-auto` so the "N events / N sources" row is pinned to the bottom and aligns across
+ * cards even when the last-change block differs in length.
  */
 export function ProtocolCard({
   summary,
@@ -25,7 +30,7 @@ export function ProtocolCard({
   return (
     <a
       href={href}
-      className="flex flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-1 transition-shadow hover:shadow-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      className="flex h-full w-full min-w-0 flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-1 transition-shadow hover:shadow-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">

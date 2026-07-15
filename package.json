@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
     "worker": "tsx src/worker/index.ts",
+    "observe:releases": "tsx src/worker/observeReleasesOnce.ts",
+    "observe:once": "tsx --env-file-if-exists=.env.local src/worker/observeReleasesOnce.ts",
+    "snapshot": "node scripts/make-snapshot.mjs",
+    "observe:refresh": "pnpm observe:once && pnpm snapshot",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

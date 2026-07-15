@@ -1,0 +1,79 @@
+name: observe-loop
+
+# Runs the writable observe -> snapshot cycle on a schedule and auto-commits the
+# regenerated snapshot. The commit lands on main, which Vercel's git integration
+# auto-deploys, so production always serves the latest observations.
+#
+# This is the real observation loop: the Vercel deployment is read-only (production
+# serves ./data/snapshot.db with PROTOCOL_RADAR_DB_READONLY=1 / VERCEL=1 and cannot
+# persist writes), so scheduling the writable pass lives here instead.
+
+on:
+  schedule:
+    # Every 6 hours, on the hour (UTC).
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+# Never run two observe passes at once: overlapping writes would corrupt the
+# hash-chain ledger. Queue instead of cancelling so an in-flight commit finishes.
+concurrency:
+  group: observe-loop
+  cancel-in-progress: false
+
+# Needed so the job can push the snapshot commit back to the repo.
+permissions:
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pnpm before setup-node. The version is read from package.json
+      # "packageManager" (pnpm@11.3.0).
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Native module better-sqlite3 must build, so do NOT pass --ignore-scripts.
+      - name: Install dependencies
+        run: pnpm install
+
+      # Only data/snapshot.db is committed; the canonical DB is git-ignored
+      # (.gitignore: /data/*.db, with !data/snapshot.db). Restore the canonical DB
+      # from the committed snapshot so the ledger hash-chain continues from the last
+      # published state.
+      - name: Restore canonical DB from snapshot
+        run: cp data/snapshot.db data/protocol-radar.db
+
+      # Full writable cycle in one step: observe:refresh = observe:once && snapshot.
+      # Writable mode: PROTOCOL_RADAR_DB_READONLY and VERCEL are intentionally unset,
+      # so the canonical ./data/protocol-radar.db opens writable. observe:once reads
+      # the HMAC ledger key from process.env; GITHUB_TOKEN only raises the GitHub
+      # Releases API rate limit. snapshot then regenerates ./data/snapshot.db.
+      - name: Observe releases and regenerate snapshot (writable)
+        env:
+          PROTOCOL_RADAR_HMAC_SECRET: ${{ secrets.PROTOCOL_RADAR_HMAC_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm observe:refresh
+
+      # Commit only the snapshot, and only if it changed. No changes => no commit
+      # (idempotent, so a quiet run never creates an empty commit). [skip ci] keeps
+      # the snapshot push from retriggering CI.
+      - name: Commit snapshot if changed
+        run: |
+          if git diff --quiet -- data/snapshot.db; then
+            echo "snapshot unchanged; nothing to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/snapshot.db
+            git commit -m "chore(observe): refresh snapshot [skip ci]"
+            git push
+          fi

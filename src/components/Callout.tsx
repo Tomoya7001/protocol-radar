@@ -4,6 +4,9 @@ import type { ReactNode } from "react";
  * Callout (02_DESIGN.md): FULL background tint + FULL uniform border + leading SVG icon.
  * NEVER a single-edge stripe (§A.1). Tokens-only. Used for the verify OK/tampered/stale
  * notices.
+ *
+ * Padding is intentionally tighter vertically (py-3) than horizontally (px-4): these callouts
+ * carry a title + at most one line, so a symmetric p-4 box reads as too tall for its content.
  */
 export type CalloutTone = "ok" | "warn" | "danger" | "info";
 
@@ -35,7 +38,7 @@ export function Callout({
   return (
     <div
       role="status"
-      className={`flex items-start gap-3 rounded-md border p-4 ${TONE_CLASSES[tone]}`}
+      className={`flex items-start gap-3 rounded-md border px-4 py-3 ${TONE_CLASSES[tone]}`}
     >
       <span
         aria-hidden="true"
