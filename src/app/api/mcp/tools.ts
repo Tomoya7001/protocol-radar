@@ -106,6 +106,59 @@ export const TOOL_DEFINITIONS: McpToolDefinition[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "latest_change",
+    description:
+      "Get the single most recent change event for one protocol (type, summary, timestamp). Unknown protocol ⇒ error.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        protocol: { type: "string", description: "Protocol key, e.g. \"mcp\"." },
+      },
+      required: ["protocol"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "list_changes",
+    description:
+      "Recent change events, newest first. Optionally filter by protocol key. Agent-friendly alias of the change feed.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        protocol: { type: "string", description: "Optional protocol-key filter." },
+        limit: {
+          type: "number",
+          description: `Max events (1..${MAX_EVENT_LIMIT}); default ${DEFAULT_EVENT_LIMIT}.`,
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "verify_ledger",
+    description:
+      "Re-verify the hash-chain ledger (raw mode) and return the outcome (ok, mode, checked). Takes no arguments.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "protocol_status",
+    description:
+      "Get the current status, freshness and last-change time for one protocol. Unknown protocol ⇒ error.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        protocol: { type: "string", description: "Protocol key, e.g. \"mcp\"." },
+        now: { type: "number", description: "Epoch ms used for freshness." },
+      },
+      required: ["protocol"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 export const TOOL_NAMES = new Set(TOOL_DEFINITIONS.map((t) => t.name));
@@ -147,6 +200,30 @@ function parseLimit(args: Args): number {
 }
 
 /**
+ * Validate an optional `protocol` filter argument. Returns the key when present (after
+ * confirming it exists — unknown ⇒ protocol_not_found), or null when omitted.
+ */
+function optionalProtocolFilter(db: Db, args: Args): string | null {
+  const protocol = args.protocol;
+  if (protocol === undefined || protocol === null) return null;
+  if (typeof protocol !== "string" || protocol.length === 0) {
+    throw new ToolError("protocol must be a non-empty string", "invalid_argument");
+  }
+  if (!protocolExists(db, protocol)) {
+    throw new ToolError(`protocol not found: ${protocol}`, "protocol_not_found");
+  }
+  return protocol;
+}
+
+/** Shared change-feed reader for `get_events` and `list_changes` (newest first). */
+function readChangeFeed(db: Db, args: Args): { events: unknown[]; count: number } {
+  const limit = parseLimit(args);
+  const protocolKey = optionalProtocolFilter(db, args);
+  const events = listEventsDto(db, { protocolKey, limit });
+  return { events, count: events.length };
+}
+
+/**
  * Execute a tool by name. `now` is the default clock (deterministic in tests). Throws
  * {@link ToolError} for bad input or unknown protocol keys; returns a JSON value otherwise.
  */
@@ -169,22 +246,9 @@ export function callTool(
       }
       return detail;
     }
-    case "get_events": {
-      const limit = parseLimit(args);
-      const protocol = args.protocol;
-      let protocolKey: string | null = null;
-      if (protocol !== undefined && protocol !== null) {
-        if (typeof protocol !== "string" || protocol.length === 0) {
-          throw new ToolError("protocol must be a non-empty string", "invalid_argument");
-        }
-        if (!protocolExists(db, protocol)) {
-          throw new ToolError(`protocol not found: ${protocol}`, "protocol_not_found");
-        }
-        protocolKey = protocol;
-      }
-      const events = listEventsDto(db, { protocolKey, limit });
-      return { events, count: events.length };
-    }
+    case "get_events":
+    case "list_changes":
+      return readChangeFeed(db, args);
     case "verify": {
       const rawMode = args.mode;
       if (
@@ -197,6 +261,44 @@ export function callTool(
       }
       const mode = parseVerifyMode(typeof rawMode === "string" ? rawMode : null);
       return runVerify(db, mode);
+    }
+    case "verify_ledger":
+      return runVerify(db, parseVerifyMode(null));
+    case "latest_change": {
+      const key = requireString(args, "protocol");
+      if (!protocolExists(db, key)) {
+        throw new ToolError(`protocol not found: ${key}`, "protocol_not_found");
+      }
+      const [latest] = listEventsDto(db, { protocolKey: key, limit: 1 });
+      return {
+        protocol: key,
+        change:
+          latest === undefined
+            ? null
+            : {
+                type: latest.type,
+                summary: latest.summary,
+                timestamp: latest.created_at,
+                seq: latest.seq,
+              },
+      };
+    }
+    case "protocol_status": {
+      const key = requireString(args, "protocol");
+      const detail = getProtocolDetail(db, key, optionalNow(args, now));
+      if (detail === null) {
+        throw new ToolError(`protocol not found: ${key}`, "protocol_not_found");
+      }
+      const p = detail.protocol;
+      return {
+        key: p.key,
+        name: p.name,
+        status: p.status,
+        freshness: p.freshness,
+        stale_warning: p.stale_warning,
+        last_change_at: p.last_event?.created_at ?? null,
+        last_change_type: p.last_event?.type ?? null,
+      };
     }
     default:
       throw new ToolError(`unknown tool: ${name}`, "unknown_tool");
