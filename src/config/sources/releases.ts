@@ -70,6 +70,41 @@ export const GITHUB_RELEASE_REPOS: GithubReleaseRepo[] = [
     label: "AG-UI repo releases",
     cadenceSeconds: SIX_HOURS,
   },
+  {
+    protocolKey: "langgraph",
+    protocolName: "LangGraph",
+    repo: "langchain-ai/langgraph",
+    label: "LangGraph repo releases",
+    cadenceSeconds: SIX_HOURS,
+  },
+  {
+    protocolKey: "openai-agents",
+    protocolName: "OpenAI Agents SDK",
+    repo: "openai/openai-agents-python",
+    label: "OpenAI Agents SDK repo releases",
+    cadenceSeconds: SIX_HOURS,
+  },
+  {
+    protocolKey: "acp",
+    protocolName: "Agent Communication Protocol",
+    repo: "i-am-bee/acp",
+    label: "ACP repo releases",
+    cadenceSeconds: SIX_HOURS,
+  },
+  {
+    protocolKey: "autogen",
+    protocolName: "Microsoft AutoGen",
+    repo: "microsoft/autogen",
+    label: "AutoGen repo releases",
+    cadenceSeconds: SIX_HOURS,
+  },
+  {
+    protocolKey: "crewai",
+    protocolName: "CrewAI",
+    repo: "crewAIInc/crewAI",
+    label: "CrewAI repo releases",
+    cadenceSeconds: SIX_HOURS,
+  },
 ];
 
 /** Source kind used for every releases feed (reuses the generic GitHub transport). */

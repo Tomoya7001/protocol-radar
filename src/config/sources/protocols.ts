@@ -238,6 +238,131 @@ export const PROTOCOL_DEFS: ProtocolDef[] = [
       },
     ],
   },
+  // ---- A1 monitored-protocol expansion (P2) — real AI-agent protocol/SDK repos ----
+  // Each protocol below is registered here (key + name + real GitHub tags feed + verified
+  // homepage) so its display name resolves at seed time, BEFORE the releases observer
+  // (src/config/sources/releases.ts) first polls it. Every repo/URL was confirmed to exist
+  // and publish real releases — no fabricated sources (docs/spec/99_EXECUTION.md integrity).
+
+  // ---- A1 LangGraph (P2) ----
+  {
+    key: "langgraph",
+    name: "LangGraph",
+    feature: "A1",
+    priority: "P2",
+    sources: [
+      {
+        kind: "github",
+        // LangChain LangGraph agent-orchestration framework (tags feed).
+        url: "https://api.github.com/repos/langchain-ai/langgraph/tags",
+        label: "LangGraph repo tags",
+        cadenceSeconds: SIX_HOURS,
+      },
+      {
+        kind: "http",
+        // Canonical LangGraph docs site (verified reachable).
+        url: "https://langchain-ai.github.io/langgraph/",
+        label: "LangGraph docs site",
+        cadenceSeconds: TWELVE_HOURS,
+      },
+    ],
+  },
+
+  // ---- A1 OpenAI Agents SDK (P2) ----
+  {
+    key: "openai-agents",
+    name: "OpenAI Agents SDK",
+    feature: "A1",
+    priority: "P2",
+    sources: [
+      {
+        kind: "github",
+        // OpenAI Agents SDK for Python (tags feed).
+        url: "https://api.github.com/repos/openai/openai-agents-python/tags",
+        label: "OpenAI Agents SDK repo tags",
+        cadenceSeconds: SIX_HOURS,
+      },
+      {
+        kind: "http",
+        // Canonical OpenAI Agents SDK docs site (verified reachable).
+        url: "https://openai.github.io/openai-agents-python/",
+        label: "OpenAI Agents SDK docs site",
+        cadenceSeconds: TWELVE_HOURS,
+      },
+    ],
+  },
+
+  // ---- A1 Agent Communication Protocol (P2) ----
+  {
+    key: "acp",
+    name: "Agent Communication Protocol",
+    feature: "A1",
+    priority: "P2",
+    sources: [
+      {
+        kind: "github",
+        // BeeAI Agent Communication Protocol (ACP) reference repo (tags feed).
+        url: "https://api.github.com/repos/i-am-bee/acp/tags",
+        label: "ACP repo tags",
+        cadenceSeconds: SIX_HOURS,
+      },
+      {
+        kind: "http",
+        // Canonical ACP spec site (verified reachable).
+        url: "https://agentcommunicationprotocol.dev",
+        label: "ACP spec site",
+        cadenceSeconds: TWELVE_HOURS,
+      },
+    ],
+  },
+
+  // ---- A1 Microsoft AutoGen (P2) ----
+  {
+    key: "autogen",
+    name: "Microsoft AutoGen",
+    feature: "A1",
+    priority: "P2",
+    sources: [
+      {
+        kind: "github",
+        // Microsoft AutoGen multi-agent framework (tags feed).
+        url: "https://api.github.com/repos/microsoft/autogen/tags",
+        label: "AutoGen repo tags",
+        cadenceSeconds: SIX_HOURS,
+      },
+      {
+        kind: "http",
+        // Canonical AutoGen docs site (verified reachable).
+        url: "https://microsoft.github.io/autogen/",
+        label: "AutoGen docs site",
+        cadenceSeconds: TWELVE_HOURS,
+      },
+    ],
+  },
+
+  // ---- A1 CrewAI (P2) ----
+  {
+    key: "crewai",
+    name: "CrewAI",
+    feature: "A1",
+    priority: "P2",
+    sources: [
+      {
+        kind: "github",
+        // CrewAI multi-agent orchestration framework (tags feed).
+        url: "https://api.github.com/repos/crewAIInc/crewAI/tags",
+        label: "CrewAI repo tags",
+        cadenceSeconds: SIX_HOURS,
+      },
+      {
+        kind: "http",
+        // Canonical CrewAI site (verified reachable).
+        url: "https://www.crewai.com",
+        label: "CrewAI site",
+        cadenceSeconds: TWELVE_HOURS,
+      },
+    ],
+  },
 ];
 
 /** Convenience: the P0 protocol keys that MUST be registered for "done". */
