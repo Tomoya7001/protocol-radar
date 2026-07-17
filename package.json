@@ -15,6 +15,7 @@
     "snapshot": "node scripts/make-snapshot.mjs",
     "observe:refresh": "pnpm observe:once && pnpm snapshot",
     "anchor": "tsx scripts/anchor-ledger.mjs",
+    "webhook:deliver": "tsx src/scripts/deliverWebhooks.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -78,6 +78,21 @@ jobs:
             git push
           fi
 
+      # C3 - deliver the change events this pass just appended to any external webhook
+      # subscribers (Slack / Discord / a custom endpoint). Runs AFTER the snapshot commit so
+      # the durable output is already secured, and reads the canonical ./data/protocol-radar.db
+      # READ-ONLY (never writes a row, never touches the ledger). It is a clean no-op when
+      # PROTOCOL_RADAR_WEBHOOK_URLS is unset, so this step is always safe to run.
+      #
+      # continue-on-error: delivery is best-effort; a flaky subscriber must NOT fail the observe
+      # loop whose primary output (the snapshot) is already committed above.
+      - name: Deliver change webhooks
+        continue-on-error: true
+        env:
+          PROTOCOL_RADAR_WEBHOOK_URLS: ${{ secrets.PROTOCOL_RADAR_WEBHOOK_URLS }}
+          PROTOCOL_RADAR_WEBHOOK_SECRET: ${{ secrets.PROTOCOL_RADAR_WEBHOOK_SECRET }}
+        run: pnpm webhook:deliver
+
       # B3 - anchor the post-observe ledger head into git tag history. Runs AFTER the
       # snapshot commit so the annotated ledger/<time>Z tag records the freshly observed
       # head. The script is READ-ONLY over ./data/protocol-radar.db (never writes a row) and
