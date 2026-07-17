@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="Protocol Radar">
+  <!-- Full-bleed brand blue (iOS applies its own mask/corners for apple-touch-icon) -->
+  <rect width="180" height="180" fill="#2563eb"/>
+  <g fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Concentric radar rings -->
+    <circle cx="90" cy="90" r="60"/>
+    <circle cx="90" cy="90" r="34"/>
+  </g>
+  <!-- Sweep wedge (translucent) pointing up-right -->
+  <path d="M90 90 L147.9 64.6 A60 60 0 0 0 113.3 32.4 Z" fill="#ffffff" fill-opacity="0.38"/>
+  <!-- Bold sweep line + center dot -->
+  <path d="M90 90 L137 43" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="90" cy="90" r="12" fill="#ffffff"/>
+</svg>

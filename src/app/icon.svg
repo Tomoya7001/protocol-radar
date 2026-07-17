@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="Protocol Radar">
+  <!-- Brand blue rounded square (matches --primary #2563eb of the header radar logo) -->
+  <rect width="32" height="32" rx="7" fill="#2563eb"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Concentric radar rings -->
+    <circle cx="16" cy="16" r="10.5"/>
+    <circle cx="16" cy="16" r="6"/>
+  </g>
+  <!-- Sweep wedge (translucent) pointing up-right, echoing the header sweep motif -->
+  <path d="M16 16 L26.13 11.56 A10.5 10.5 0 0 0 20.08 5.94 Z" fill="#ffffff" fill-opacity="0.38"/>
+  <!-- Bold sweep line + center dot -->
+  <path d="M16 16 L24.2 7.8" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="16" cy="16" r="2.2" fill="#ffffff"/>
+</svg>
