@@ -16,3 +16,9 @@ export {
   releasesUrl,
 } from "./releases";
 export type { GithubReleaseRepo } from "./releases";
+export {
+  SPEC_PAGE_SOURCES,
+  SPEC_SOURCE_KIND,
+  specPageUrl,
+} from "./specPages";
+export type { SpecPageSource } from "./specPages";

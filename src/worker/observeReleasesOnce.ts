@@ -10,6 +10,7 @@ import {
   observeReleases,
   type ObserveReleasesResult,
 } from "./observeReleases";
+import { observeSpecPages } from "./observeSpecPages";
 
 /**
  * Options for a single observe-and-verify pass. Mirrors ObserveReleasesOptions so every
@@ -50,11 +51,13 @@ export async function observeReleasesAndVerify(
 }
 
 /**
- * One-shot real-source observation of GitHub Releases for `npm run observe:releases`.
+ * One-shot real-source observation for `pnpm observe:once` (and `observe:releases`).
  *
- * Wires the real HTTP client into observeReleasesAndVerify(), runs a single pass over the
- * configured repos, logs the counts, and throws if the ledger self-check fails so the CLI
- * exits non-zero. The long-running worker (index.ts) and the cron route reuse the same core.
+ * Runs BOTH real sources into the SAME ledger, in one process: GitHub Releases
+ * (observeReleases) then generic spec pages (observeSpecPages, A2 — 汎用 spec-page 内容ハッシュ
+ * 観測ソース). A SINGLE verifyFromRaw() after both passes proves the whole appended chain (the
+ * same proof /api/verify?mode=raw runs); it throws if the self-check fails so the CLI exits
+ * non-zero. Spec-page observation runs alongside releases without altering the releases path.
  *
  * Refuses to run without PROTOCOL_RADAR_HMAC_SECRET (the ledger key), mirroring the worker.
  */
@@ -64,27 +67,28 @@ export async function runObserveReleasesOnce(): Promise<void> {
   const db = openMigratedDatabase();
   const client = new FetchHttpClient();
   const logger = consoleLogger;
+  const now = new Date();
 
-  const result = await observeReleasesAndVerify({
-    db,
-    client,
-    now: new Date(),
-    logger,
-  });
+  const releases = await observeReleases({ db, client, now, logger });
+  const specPages = await observeSpecPages({ db, client, now, logger });
+  const verified = verifyFromRaw(db);
 
   logger.info(
-    `observeReleases: repos=${result.reposPolled} events=${result.eventsCreated} ` +
-      `without_releases=${result.reposWithoutReleases}`,
+    `observeReleases: repos=${releases.reposPolled} events=${releases.eventsCreated} ` +
+      `without_releases=${releases.reposWithoutReleases}`,
+  );
+  logger.info(
+    `observeSpecPages: pages=${specPages.pagesPolled} events=${specPages.eventsCreated}`,
   );
 
-  if (result.verified.ok) {
+  if (verified.ok) {
     logger.info("ledger verifyFromRaw: ok");
   } else {
     logger.error(
-      `ledger verifyFromRaw FAILED at seq=${result.verified.tamperedSeq}: ` +
-        `${result.verified.reason}`,
+      `ledger verifyFromRaw FAILED at seq=${verified.tamperedSeq}: ` +
+        `${verified.reason}`,
     );
-    throw new Error("ledger verification failed after observing releases");
+    throw new Error("ledger verification failed after observing real sources");
   }
 }
 
