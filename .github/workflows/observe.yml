@@ -20,7 +20,7 @@ concurrency:
   group: observe-loop
   cancel-in-progress: false
 
-# Needed so the job can push the snapshot commit back to the repo.
+# Needed so the job can push the snapshot commit AND the ledger anchor tag back to the repo.
 permissions:
   contents: write
 
@@ -77,3 +77,23 @@ jobs:
             git commit -m "chore(observe): refresh snapshot [skip actions]"
             git push
           fi
+
+      # B3 - anchor the post-observe ledger head into git tag history. Runs AFTER the
+      # snapshot commit so the annotated ledger/<time>Z tag records the freshly observed
+      # head. The script is READ-ONLY over ./data/protocol-radar.db (never writes a row) and
+      # idempotent: an unchanged head re-uses the existing tag and pushes nothing. ANCHOR_PUSH=1
+      # opts this CI run into pushing the tag to origin (contents: write, same creds as the
+      # snapshot push above). This workflow triggers only on schedule/workflow_dispatch, so a
+      # tag push never retriggers it - no [skip actions] needed on the tag.
+      #
+      # continue-on-error: a transient tag-push hiccup must NOT fail the observe loop, whose
+      # primary output (the snapshot) is already committed above. The push is still attempted on
+      # every run, so a missed anchor self-heals on the next pass.
+      - name: Anchor ledger head into git tag history
+        continue-on-error: true
+        env:
+          ANCHOR_PUSH: "1"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          pnpm anchor
