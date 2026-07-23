@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.tomoya7001/protocol-radar",
+  "title": "Protocol Radar",
+  "description": "Read-only MCP server tracking change events, status and hash-chain ledger for AI agent protocols (MCP, A2A and more).",
+  "version": "0.1.0",
+  "websiteUrl": "https://protocol-radar-lemon.vercel.app",
+  "repository": {
+    "url": "https://github.com/Tomoya7001/protocol-radar",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://protocol-radar-lemon.vercel.app/api/mcp"
+    }
+  ]
+}
