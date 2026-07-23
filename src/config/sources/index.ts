@@ -22,3 +22,9 @@ export {
   specPageUrl,
 } from "./specPages";
 export type { SpecPageSource } from "./specPages";
+export {
+  PACKAGE_SOURCES,
+  PACKAGE_SOURCE_KIND,
+  packageSourceUrl,
+} from "./packages";
+export type { PackageSource } from "./packages";

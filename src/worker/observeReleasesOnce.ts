@@ -11,6 +11,7 @@ import {
   type ObserveReleasesResult,
 } from "./observeReleases";
 import { observeSpecPages } from "./observeSpecPages";
+import { observePackages } from "./observePackages";
 
 /**
  * Options for a single observe-and-verify pass. Mirrors ObserveReleasesOptions so every
@@ -53,11 +54,12 @@ export async function observeReleasesAndVerify(
 /**
  * One-shot real-source observation for `pnpm observe:once` (and `observe:releases`).
  *
- * Runs BOTH real sources into the SAME ledger, in one process: GitHub Releases
- * (observeReleases) then generic spec pages (observeSpecPages, A2 — 汎用 spec-page 内容ハッシュ
- * 観測ソース). A SINGLE verifyFromRaw() after both passes proves the whole appended chain (the
+ * Runs ALL real sources into the SAME ledger, in one process: GitHub Releases
+ * (observeReleases), generic spec pages (observeSpecPages, A2 — 汎用 spec-page 内容ハッシュ
+ * 観測ソース), then SDK package versions (observePackages, F1 — npm + PyPI パッケージバージョン
+ * 観測ソース). A SINGLE verifyFromRaw() after all passes proves the whole appended chain (the
  * same proof /api/verify?mode=raw runs); it throws if the self-check fails so the CLI exits
- * non-zero. Spec-page observation runs alongside releases without altering the releases path.
+ * non-zero. Each source observes alongside the others without altering the others' paths.
  *
  * Refuses to run without PROTOCOL_RADAR_HMAC_SECRET (the ledger key), mirroring the worker.
  */
@@ -71,6 +73,7 @@ export async function runObserveReleasesOnce(): Promise<void> {
 
   const releases = await observeReleases({ db, client, now, logger });
   const specPages = await observeSpecPages({ db, client, now, logger });
+  const packages = await observePackages({ db, client, now, logger });
   const verified = verifyFromRaw(db);
 
   logger.info(
@@ -79,6 +82,10 @@ export async function runObserveReleasesOnce(): Promise<void> {
   );
   logger.info(
     `observeSpecPages: pages=${specPages.pagesPolled} events=${specPages.eventsCreated}`,
+  );
+  logger.info(
+    `observePackages: packages=${packages.packagesPolled} events=${packages.eventsCreated} ` +
+      `without_version=${packages.packagesWithoutVersion}`,
   );
 
   if (verified.ok) {

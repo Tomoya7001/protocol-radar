@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "worker": "tsx src/worker/index.ts",
     "observe:releases": "tsx src/worker/observeReleasesOnce.ts",
+    "observe:packages": "tsx src/worker/observePackagesOnce.ts",
     "observe:once": "tsx --env-file-if-exists=.env.local src/worker/observeReleasesOnce.ts",
     "snapshot": "node scripts/make-snapshot.mjs",
     "observe:refresh": "pnpm observe:once && pnpm snapshot",

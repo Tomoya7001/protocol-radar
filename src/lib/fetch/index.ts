@@ -9,5 +9,18 @@ export { validateSourceUrl } from "./validate";
 export type { ValidateResult } from "./validate";
 export { pollGithub, parseGithubRefs } from "./github";
 export type { GithubPollResult, GithubRef } from "./github";
+export {
+  pollPackageVersion,
+  packageUrl,
+  npmPackageUrl,
+  pypiPackageUrl,
+  parseNpmVersion,
+  parsePyPiVersion,
+  parsePackageVersion,
+  normalizePackageBody,
+  previousPackageVersion,
+  packageContentHash,
+} from "./packageRegistry";
+export type { PackagePollResult, PackageRegistry } from "./packageRegistry";
 export { consoleLogger, createMemoryLogger } from "./logger";
 export type { Logger } from "./logger";
