@@ -156,12 +156,20 @@ function detectSpike(
   };
 }
 
-/** dormancy_break: newest event follows a ≥DORMANCY_DAYS gap and is itself recent. */
+/**
+ * dormancy_break: newest event follows a ≥DORMANCY_DAYS gap and is itself recent.
+ *
+ * A "vanished" newest event means the source disappeared — that is a *disappearance*, not a
+ * reawakening, so it is reported by detectVanished (high severity) and must NOT double-fire as
+ * a dormancy break here.
+ */
 function detectDormancyBreak(
   bucket: Bucket,
   newest: Entry,
   now: number,
 ): Anomaly | null {
+  if (newest.type === "vanished") return null;
+
   const prev = bucket.entries[1];
   if (prev === undefined) return null;
 
