@@ -21,6 +21,12 @@
 # ...but the read-only snapshot IS committed so it can be bundled for deploy.
 !/data/snapshot.db
 
+# F6 - committed OpenTimestamps proofs (external Bitcoin anchor of the ledger head).
+# The `.db` rules above only ignore files DIRECTLY under data/, not this subdir, but keep an
+# explicit allow so data/anchors/*.ots can never be accidentally swept by a future data/ rule.
+!/data/anchors/
+!/data/anchors/*.ots
+
 # runtime/debug artifacts under data/ (never commit these)
 /data/*.log
 /data/*.err

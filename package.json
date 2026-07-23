@@ -16,6 +16,7 @@
     "snapshot": "node scripts/make-snapshot.mjs",
     "observe:refresh": "pnpm observe:once && pnpm snapshot",
     "anchor": "tsx scripts/anchor-ledger.mjs",
+    "timestamp": "tsx scripts/timestamp-ledger.mjs",
     "webhook:deliver": "tsx src/scripts/deliverWebhooks.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -23,6 +24,7 @@
     "better-sqlite3": "^11.8.1",
     "lucide-react": "^0.469.0",
     "next": "15.5.19",
+    "opentimestamps": "^0.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

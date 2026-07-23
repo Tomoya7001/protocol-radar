@@ -7,6 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // opentimestamps ships a broken "main" (open-timestamps.js does not exist; Node falls back
+      // to index.js with a deprecation warning, but Vite's stricter resolver errors). Point the
+      // bundler straight at the real CommonJS entry so the F6 timestamp tests can import it.
+      opentimestamps: fileURLToPath(
+        new URL("./node_modules/opentimestamps/index.js", import.meta.url),
+      ),
     },
   },
   test: {

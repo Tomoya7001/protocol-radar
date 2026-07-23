@@ -112,3 +112,33 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           pnpm anchor
+
+
+      # F6 - anchor the post-observe ledger head into the Bitcoin blockchain via OpenTimestamps.
+      # Complementary to B3 above: B3 pins the head into git tag history (trust GitHub), F6 stamps
+      # the SAME head hash into Bitcoin so provenance is verifiable WITHOUT trusting GitHub. Runs
+      # near the B3 anchor step and READ-ONLY over ./data/protocol-radar.db (computeLedgerHead only,
+      # never writes a row). `pnpm timestamp` creates data/anchors/<head>.ots for a new head and
+      # best-effort upgrades pending proofs; the commit below then includes those data/anchors
+      # changes and pushes them.
+      #
+      # continue-on-error + the script's own non-fatal calendar handling: a calendar timeout/failure
+      # must NOT fail the observe loop, whose primary output (the snapshot) is already committed
+      # above. Missed/late confirmations self-heal on a later pass's upgrade. This workflow triggers
+      # only on schedule/workflow_dispatch, so the anchors push never retriggers it.
+      #
+      # `git add` before the check: new .ots files are UNTRACKED, so `git diff` alone would miss
+      # them; staging first and testing `git diff --cached` catches both new and updated proofs.
+      - name: Timestamp ledger head via OpenTimestamps (Bitcoin)
+        continue-on-error: true
+        run: |
+          pnpm timestamp
+          git add data/anchors
+          if git diff --cached --quiet -- data/anchors; then
+            echo "no .ots changes; nothing to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(observe): update OpenTimestamps anchors [skip actions]"
+            git push
+          fi
