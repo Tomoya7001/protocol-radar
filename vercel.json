@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SITE_URL": "https://protocol-radar-lemon.vercel.app"
+    }
+  },
   "env": {
     "PROTOCOL_RADAR_DB_READONLY": "1",
     "DATABASE_PATH": "./data/snapshot.db",

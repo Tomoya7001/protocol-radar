@@ -10,14 +10,24 @@ import { describe, it, expect } from "vitest";
  * the deployment. `resolveSiteUrl()` was correct — the DEPLOYMENT CONFIG was not, and no test
  * covered it, so nothing failed. Crawling and AI discovery were silently dead.
  *
- * These tests assert the two committed files that pin the public origin agree with each other
- * and never point at localhost, so the same class of misconfiguration cannot ship again.
+ * These tests assert the committed files that pin the public origin agree with each other and
+ * never point at localhost, so the same class of misconfiguration cannot ship again.
+ *
+ * The origin must be declared TWICE in vercel.json, because the discovery surfaces do not all
+ * resolve it at the same moment:
+ *  - `env`       — runtime, for the `force-dynamic` routes (sitemap.xml, llms.txt).
+ *  - `build.env` — build time, for statically generated metadata routes (robots.ts declares no
+ *                  `dynamic`, so Next.js evaluates it during `next build`, where a runtime-only
+ *                  variable is not visible).
+ * Declaring only `env` fixes sitemap.xml and llms.txt while leaving robots.txt on localhost —
+ * exactly the half-fixed state this suite now prevents.
  */
 
 const REPO_ROOT = join(__dirname, "..", "..");
 
 interface VercelConfig {
   env?: Record<string, string>;
+  build?: { env?: Record<string, string> };
 }
 
 interface McpServerManifest {
@@ -43,6 +53,19 @@ describe("deployment config — public origin", () => {
     const vercel = readJson<VercelConfig>("vercel.json");
     expect(vercel.env?.NEXT_PUBLIC_SITE_URL).toBeTypeOf("string");
     expect(vercel.env?.NEXT_PUBLIC_SITE_URL).not.toBe("");
+  });
+
+  it("declares the origin at BUILD time too, for statically generated routes", () => {
+    const vercel = readJson<VercelConfig>("vercel.json");
+    expect(vercel.build?.env?.NEXT_PUBLIC_SITE_URL).toBeTypeOf("string");
+    expect(vercel.build?.env?.NEXT_PUBLIC_SITE_URL).not.toBe("");
+  });
+
+  it("keeps the build-time and runtime origins identical", () => {
+    const vercel = readJson<VercelConfig>("vercel.json");
+    expect(vercel.build?.env?.NEXT_PUBLIC_SITE_URL).toBe(
+      vercel.env?.NEXT_PUBLIC_SITE_URL,
+    );
   });
 
   it("the deployed origin is https and never localhost", () => {

@@ -11,8 +11,14 @@ site origin from the environment (`resolveSiteUrl()` in `src/lib/discovery/site.
 silently breaks search-engine crawling and AI discovery in production — the failure is
 invisible because every route still returns 200.
 
-- Vercel reads it from `vercel.json` (`env.NEXT_PUBLIC_SITE_URL`). Update it there when the
-  custom domain lands; a dashboard environment variable of the same name overrides it.
+- Vercel reads it from `vercel.json`, where it is declared **twice on purpose**:
+  - `env` — runtime, for the `force-dynamic` routes (`sitemap.xml`, `llms.txt`).
+  - `build.env` — build time, for statically generated metadata routes. `robots.ts` declares
+    no `dynamic`, so Next.js evaluates it during `next build`, where a runtime-only variable
+    is invisible. Declaring only `env` fixes the sitemap and llms.txt but leaves robots.txt
+    pointing at localhost.
+  Update **both** when the custom domain lands; a dashboard environment variable of the same
+  name overrides them (a dashboard change needs a redeploy to reach the build-time value).
 - Set the origin **without** a trailing slash.
 - `mcp/server.json` pins the same origin for the MCP registry listing. Both must move
   together — `src/test/deploymentConfig.test.ts` fails the build if they drift apart, if the
