@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { __setDbForTests } from "@/app/_data/db";
 import { seededDb } from "@/app/_data/fixtures";
 import {
@@ -11,6 +11,22 @@ import {
   type PaymentRuntime,
 } from "@/lib/payments";
 import { GET as x402Get } from "./route";
+
+/**
+ * The metered surface is gated by PROTOCOL_RADAR_BILLING_PUBLIC (see lib/billing/publicSurface.ts).
+ * These tests exercise the payment logic, so they open the gate explicitly and close it again.
+ */
+const PREV_BILLING_PUBLIC = process.env.PROTOCOL_RADAR_BILLING_PUBLIC;
+beforeEach(() => {
+  process.env.PROTOCOL_RADAR_BILLING_PUBLIC = "1";
+});
+afterEach(() => {
+  if (PREV_BILLING_PUBLIC === undefined) {
+    delete process.env.PROTOCOL_RADAR_BILLING_PUBLIC;
+  } else {
+    process.env.PROTOCOL_RADAR_BILLING_PUBLIC = PREV_BILLING_PUBLIC;
+  }
+});
 
 /**
  * F-041 + F-042 acceptance tests for the x402 metered endpoint. Fully offline: the payment
@@ -160,5 +176,16 @@ describe("F-042 per-key rate metering", () => {
     const res = await get({ authorization: `Bearer ${h.key}` });
     expect(res.headers.get("x-ratelimit-limit")).toBe("10");
     expect(res.headers.get("x-ratelimit-remaining")).toBe("9");
+  });
+});
+
+describe("commercial-surface gate", () => {
+  it("404s when the deployment is not on a plan that permits commerce", async () => {
+    // Vercel's fair-use rules make "advertising the sale of a service" commercial usage, and
+    // a 402 carrying payment requirements is exactly that. The endpoint must stay dark until
+    // the flag is set, or a Hobby deployment is in violation before earning a cent.
+    delete process.env.PROTOCOL_RADAR_BILLING_PUBLIC;
+    const res = await x402Get(new Request("http://test.local/api/x402"));
+    expect(res.status).toBe(404);
   });
 });

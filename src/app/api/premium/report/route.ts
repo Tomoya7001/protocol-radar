@@ -1,3 +1,4 @@
+import { isBillingSurfacePublic } from "@/lib/billing/publicSurface";
 import { getDb } from "@/app/_data/db";
 import { getProtocolSummaries, listEventsDto } from "@/app/_data/queries";
 import { parseNow } from "@/app/api/_lib/http";
@@ -42,6 +43,11 @@ function parsePeriod(raw: string | null): ReportPeriod {
 }
 
 export async function GET(req: Request): Promise<Response> {
+  // Hidden unless the deployment is on a plan that permits commerce (see publicSurface.ts).
+  if (!isBillingSurfacePublic()) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   // 1–3. Authenticate + rate-limit + x402 gate. Any failure is a ready-to-return 401/429/402.
   const guard = await guardX402(req);
   if (!guard.ok) return guard.response;

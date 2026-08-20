@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe("C2 sitemap.xml (MetadataRoute.Sitemap)", () => {
-  it("lists the root, /trust, and one /embed/{key} per monitored protocol", () => {
+  it("lists the root, /trust, /verify, and one /protocols/{key} per monitored protocol", () => {
     process.env.NEXT_PUBLIC_SITE_URL = "https://pr.example";
     __setDbForTests(seededDb(NOW));
 
@@ -22,12 +22,13 @@ describe("C2 sitemap.xml (MetadataRoute.Sitemap)", () => {
 
     expect(urls).toContain("https://pr.example/");
     expect(urls).toContain("https://pr.example/trust");
+    expect(urls).toContain("https://pr.example/verify");
 
     for (const key of ["a2a", "mcp", "oldproto", "ucp", "x402"]) {
-      expect(urls).toContain(`https://pr.example/embed/${key}`);
+      expect(urls).toContain(`https://pr.example/protocols/${key}`);
     }
-    // 2 static + 5 seeded protocols
-    expect(entries.length).toBe(7);
+    // 3 static + 5 seeded protocols
+    expect(entries.length).toBe(8);
   });
 
   it("sets lastModified from the protocol's last change when present", () => {
@@ -35,9 +36,19 @@ describe("C2 sitemap.xml (MetadataRoute.Sitemap)", () => {
     __setDbForTests(seededDb(NOW));
 
     const entries = sitemap();
-    const mcp = entries.find((e) => e.url.endsWith("/embed/mcp"));
+    const mcp = entries.find((e) => e.url.endsWith("/protocols/mcp"));
     expect(mcp).toBeDefined();
     // mcp is a fresh protocol in the fixtures → it has a last-change timestamp.
     expect(typeof mcp?.lastModified).toBe("string");
+  });
+  it("never advertises /embed/* — those are SVG responses, not pages", () => {
+    // Regression guard: a previous version listed twelve /embed/{key} SVG endpoints and zero
+    // protocol pages, so the sitemap hid all of the site's actual content from crawlers.
+    process.env.NEXT_PUBLIC_SITE_URL = "https://pr.example";
+    __setDbForTests(seededDb(NOW));
+
+    for (const entry of sitemap()) {
+      expect(entry.url).not.toContain("/embed/");
+    }
   });
 });

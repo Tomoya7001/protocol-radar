@@ -1,3 +1,4 @@
+import { isBillingSurfacePublic } from "@/lib/billing/publicSurface";
 import { getDb } from "@/app/_data/db";
 import { getProtocolSummaries } from "@/app/_data/queries";
 import { jsonResponse, parseNow } from "@/app/api/_lib/http";
@@ -64,6 +65,11 @@ function paymentRequiredResponse(
 }
 
 export async function GET(req: Request): Promise<Response> {
+  // Hidden unless the deployment is on a plan that permits commerce (see publicSurface.ts).
+  if (!isBillingSurfacePublic()) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   const url = new URL(req.url);
   const now = parseNow(url);
   const rt = getPaymentRuntime();

@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+import { isBillingSurfacePublic } from "@/lib/billing/publicSurface";
 import { getDictionary, resolveLocale, type Locale } from "@/app/_i18n";
 import { firstParam, type SearchParams } from "@/app/_params";
 import { defaultPaymentRequirements } from "@/lib/payments";
@@ -152,6 +154,9 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  // Hidden unless the deployment is on a plan that permits commerce (see publicSurface.ts).
+  if (!isBillingSurfacePublic()) notFound();
+
   const sp = await searchParams;
   const locale = resolveLocale(firstParam(sp.lang));
   const dict = getDictionary(locale);

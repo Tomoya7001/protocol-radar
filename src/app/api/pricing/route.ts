@@ -1,3 +1,4 @@
+import { isBillingSurfacePublic } from "@/lib/billing/publicSurface";
 import { jsonResponse } from "@/app/api/_lib/http";
 import { defaultPaymentRequirements } from "@/lib/payments";
 import { buildPricing, type PremiumEndpoint } from "@/lib/pricing/plans";
@@ -35,6 +36,11 @@ const PREMIUM_ENDPOINTS: readonly PremiumEndpoint[] = [
 ];
 
 export async function GET(): Promise<Response> {
+  // Hidden unless the deployment is on a plan that permits commerce (see publicSurface.ts).
+  if (!isBillingSurfacePublic()) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   const requirements = defaultPaymentRequirements();
   const pricing = buildPricing({
     requirements,
