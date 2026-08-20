@@ -96,4 +96,15 @@ describe("deployment config — public origin", () => {
       expect(originOf(remote.url ?? "")).toBe(expected);
     }
   });
+
+  it("pins the Node major, because the runtime is rolled forward under us", () => {
+    // Node 24.19.0 added cleanup hooks to node::ObjectWrap without the fix that makes
+    // RemoveEnvironmentCleanupHook safe during GC (landed in Node 26 via nodejs/node#63985).
+    // better-sqlite3's Statement extends ObjectWrap, so every collected statement tripped
+    // "Assertion failed: (env) != nullptr" and aborted the process — roughly a third to a half
+    // of all requests 500'd, with no deploy on our side. The host only exposes major versions
+    // and auto-applies minors, so the only available defence is pinning the major.
+    const pkg = readJson<{ engines?: { node?: string } }>("package.json");
+    expect(pkg.engines?.node).toBe("22.x");
+  });
 });

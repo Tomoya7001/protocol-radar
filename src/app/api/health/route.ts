@@ -61,6 +61,11 @@ export function GET(req: Request): Response {
   const body = {
     ok: ledger.ok && summaries.length > 0,
     generated_at: new Date(now).toISOString(),
+    // Reported so a runtime regression is diagnosable from outside. Node 24.19.0 shipped a
+    // node::ObjectWrap change that aborts the process (SIGABRT) when better-sqlite3 statements
+    // are garbage-collected; the host silently rolls minor versions forward, so the runtime can
+    // break this deployment without any commit. See "engines" in package.json.
+    runtime: { node: process.version },
     protocols_total: summaries.length,
     events_total: countEvents(db),
     freshness_counts,
