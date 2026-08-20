@@ -3,6 +3,21 @@
 Provenance-tracked observation of agent-protocol releases, folded into an HMAC
 hash-chain ledger and served from a read-only snapshot on Vercel.
 
+## Public origin (`NEXT_PUBLIC_SITE_URL`) — required in production
+
+`robots.txt`, `sitemap.xml` and `llms.txt` render without a `Request`, so they resolve the
+site origin from the environment (`resolveSiteUrl()` in `src/lib/discovery/site.ts`).
+**When `NEXT_PUBLIC_SITE_URL` is unset those routes emit `http://localhost:3000`**, which
+silently breaks search-engine crawling and AI discovery in production — the failure is
+invisible because every route still returns 200.
+
+- Vercel reads it from `vercel.json` (`env.NEXT_PUBLIC_SITE_URL`). Update it there when the
+  custom domain lands; a dashboard environment variable of the same name overrides it.
+- Set the origin **without** a trailing slash.
+- `mcp/server.json` pins the same origin for the MCP registry listing. Both must move
+  together — `src/test/deploymentConfig.test.ts` fails the build if they drift apart, if the
+  origin is missing, or if it points at localhost.
+
 ## Live observation → snapshot (残② 実観測の運用)
 
 Vercel serves the DB **read-only** (`PROTOCOL_RADAR_DB_READONLY=1` / `VERCEL=1`,
