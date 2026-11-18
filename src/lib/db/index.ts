@@ -17,6 +17,12 @@ export { migrations } from "./migrations";
 export type { Migration } from "./migrations";
 export * from "./types";
 export * from "./repo";
+export {
+  PLACEHOLDER_SOURCE_HOST,
+  isPlaceholderSourceUrl,
+  deactivatePlaceholderSources,
+  listActivePlaceholderSources,
+} from "./placeholders";
 
 /**
  * Open a database and ensure the schema is migrated. Convenience for app/worker startup

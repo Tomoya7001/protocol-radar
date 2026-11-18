@@ -99,6 +99,14 @@ function addVanishEvent(
  *  - oldproto : vanished, inactive source, appeared → vanished
  */
 export function seedSampleData(db: Db, now: number): void {
+  // Fixtures are for in-memory test DBs ONLY. Seeding them into a file DB is how the
+  // example.test placeholder sources once reached the committed production snapshot
+  // (see src/lib/db/placeholders.ts), so refuse anything that is not :memory:.
+  if (!db.memory) {
+    throw new Error(
+      `seedSampleData: refusing to seed test fixtures into a file database (${db.name}); use ":memory:"`,
+    );
+  }
   // --- mcp: fresh ---
   const mcp = insertProtocol(db, {
     key: "mcp",
